@@ -1,0 +1,21 @@
+****************************** START ************************************
+TURBODAT.exe version 0.1 for DOS operating system. 
+by ULTRAsmart; David Jarvis, Australia e-mail: davidj@ultrasmart.org.
+web site:   www.ultrasmart.org. 
+creation date: 17 April, 2004. 
+FREEWARE. This software is provided 'as-is'. Use at your own risk.
+***********************************************************************
+Utility to be used with TDSK.EXE, a RAM-Drive//Disk creation FREEWARE
+program. Copyright 1992-2000 Ciriaco Garcia de Celis. 
+TDSK.EXE is found on the FreeDOS web site:    www.freedos.org 
+TURBODAT.exe was tested on  TURBODSK v2.42 
+***********************************************************************
+Creates text files HOME.dat, and TURBO.dat which can be read by programs.
+The 3rd line of the text file provides path information.   
+ -- In HOME.dat, the working diriectory could be C:\MICROLOGIC, and  
+ -- In TURBO.dat, the RAM Drive could be D:  or; 
+    the numeral "0" if no turbodrive found.  
+***********************************************************************
+Operation: Only two switches: /? or /H for this help information. 
+May be run from autoexec.bat, batch files, etc, or manually. 
+****************************** END *************************************

@@ -1,0 +1,175 @@
+#!/bin/bash
+
+# opencocon FLOPPY creator
+# MIT License, see LICENSE.
+
+
+show_floppy() {
+
+  # Ascii-art from http://www.chris.com/ASCII/index.php?art=objects/computers
+
+  echo ".---------------------------------."
+  echo "|  .---------------------------.  |"
+  echo "|[]|                           |[]|"
+  echo "|  |                           |  |"
+  echo "|  |    OPENCOCON              |  |"
+  echo "|  |                           |  |"
+  echo "|  |    DISK IMAGE CREATOR     |  |"
+  echo "|  |                           |  |"
+  echo "|  |          H.SHIMADA 2014   |  |"
+  echo "|  |                           |  |"
+  echo "|  |                           |  |"
+  echo "|  \`---------------------------'  |"
+  echo "|      __________________ _____   |"
+  echo "|     |   ___            |     |  |"
+  echo "|     |  |   |           |     |  |"
+  echo "|     |  |   |           |     |  |"
+  echo "|     |  |   |           |     |  |"
+  echo "|     |  |___|           |     |  |"
+  echo "\`.____|__________________|_____|__|"
+}
+
+
+if [ $2 ];
+then
+
+  if [ ! `which zip` ];
+  then
+    echo "Error: zip is not found."
+    exit 2
+  fi
+
+  if [ ! ` which mcopy ` ];
+  then
+    echo "Error: mcopy is not found. Please install mtools."
+    exit 2
+  fi
+
+  
+  # Create work directory
+  CURPWD="`pwd`"
+  IMAGE_DATE=`date +%Y%m%d`
+  WORKDIR="$CURPWD/image-$IMAGE_DATE/"
+  DISKLABEL="coconfd-$2-$IMAGE_DATE"
+
+  mkdir -p $WORKDIR
+
+  # Copy image to work directory
+  if [ ! -r $1/bzImage-cocon486.bin ];
+  then
+    echo "Error: bzImage-cocon486.bin is not found."
+    exit 2
+  fi
+  cp -L $1/bzImage-cocon486.bin  $WORKDIR/BZIMAGE
+
+
+  if [ ! -r $1/initramfs-crusoe-image-cocon486.cramfs.gz ];
+  then
+    echo "Error: initramfs-crusoe-image-cocon486.cramfs.gz is not found."
+    exit 2
+  fi
+  cp -L $1/initramfs-crusoe-image-cocon486.cramfs.gz  $WORKDIR/CRUSOE.GZ
+
+  # zip it
+  cd $WORKDIR
+  zip -0 CCN.ZIP BZIMAGE CRUSOE.GZ
+
+  # and Devide it
+  split -d -b 1420k CCN.ZIP CCN-
+
+  # count disks
+  # TODO : max is 9
+  cur=0
+  while [ $cur -le 9 ]
+  do
+    if [ -r "$WORKDIR/CCN-0$cur" ];
+    then
+      cur=` expr $cur + 1 `
+    else
+      # end. Disk len is $cur.
+      break
+    fi
+  done
+
+  FLOPPYS=$cur
+
+  # make part of COCON.BAT
+  cur=0
+  COCON_BAT_FILL=""
+  while [ $cur -lt $FLOPPYS ];
+  do
+    COCON_BAT_FILL="$COCON_BAT_FILL CCN-0$cur"
+    cur=` expr $cur + 1 `
+  done
+
+  cp $CURPWD/COCON.BAT.templete $WORKDIR/COCON.BAT
+  sed -i -e "s:#COCON_FLOPPYS#:$COCON_BAT_FILL:g" \
+             $WORKDIR/COCON.BAT
+
+  # Copy first image
+  if [ ! -r $CURPWD/freedos/FDOEM.144.gz ];
+  then
+    echo "Error: FDOEM.144.gz is not found. Please check path."
+    exit 2
+  fi
+
+  # TODO : make COCON.BAT
+  
+
+  # decompress Disk 1
+  cp -L $CURPWD/freedos/FDOEM.144.gz  $WORKDIR/$DISKLABEL-disk1.img.gz
+  gzip -d $WORKDIR/$DISKLABEL-disk1.img.gz
+
+  # Label Disk1
+  mlabel -i $WORKDIR/$DISKLABEL-disk1.img ::COCON-1
+
+  # Delete Unneed file
+  mdel -i $WORKDIR/$DISKLABEL-disk1.img ::/AUTOEXEC.BAT
+  mdel -i $WORKDIR/$DISKLABEL-disk1.img ::/CONFIG.SYS
+
+  # copy needed file to Disk 1
+  mcopy -i $WORKDIR/$DISKLABEL-disk1.img $CURPWD/coconfd/*.* ::/
+  mcopy -i $WORKDIR/$DISKLABEL-disk1.img $WORKDIR/COCON.BAT ::/
+  mmd -i $WORKDIR/$DISKLABEL-disk1.img DOC
+  mcopy -i $WORKDIR/$DISKLABEL-disk1.img $CURPWD/coconfd/DOC/* ::/DOC
+
+  # and copy *LAST* devided file to Disk 1
+  mcopy -i $WORKDIR/$DISKLABEL-disk1.img $WORKDIR/CCN-0` expr $FLOPPYS - 1 ` ::/
+  
+  # make Disk 2-$FLOPPYS
+  cur=1
+  while [ $cur -lt $FLOPPYS ]
+  do
+    # Make image
+    CUR_IMAGENAME="$WORKDIR/$DISKLABEL-disk` expr $cur + 1 `.img"
+    dd if=/dev/zero of=$CUR_IMAGENAME count=1440 bs=1k
+    mformat -C -f 1440 -v COCON-$cur -i $CUR_IMAGENAME ::
+
+    # and copy devided file
+    mcopy -i $CUR_IMAGENAME $WORKDIR/CCN-0$cur ::/
+
+    # on last image, touch and copy end.txt
+    if [ $cur -eq ` expr $FLOPPYS - 1` ];
+    then
+      touch $WORKDIR/END.TXT
+      mcopy -i $CUR_IMAGENAME $WORKDIR/END.TXT ::/
+    fi
+
+    cur=` expr $cur + 1 `
+  done
+
+  # Make hash
+  cd $WORKDIR
+  md5sum $DISKLABEL-disk*.img > $DISKLABEL.md5sums
+
+  cd $CURPWD
+  echo "Created. needed floppy disk is $FLOPPYS."
+
+else
+  show_floppy
+  echo ""
+  echo "opencocon FLOPPY disk creator"
+  echo "usage: cocon-fdcreator [deploy image path] [version]"
+fi
+
+

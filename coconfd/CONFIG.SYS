@@ -1,0 +1,8 @@
+device=A:\HIMEM.EXE
+files=10
+buffers=10
+dos=high,umb
+stacks=9,256
+devicehigh=A:\TDSK.EXE 16384
+lastdrive=z
+SHELL=\COMMAND.COM /E:256 /P

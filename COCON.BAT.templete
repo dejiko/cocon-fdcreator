@@ -1,0 +1,19 @@
+@echo off
+
+rem Copy all files to RAM Drive
+:docopy
+copy a:\CCN_*.*
+if exist A:\end.txt goto done
+pause Insert next floppy and press a key...
+goto docopy
+
+:done
+rem Now reconstruct the zipfile
+copy /b #COCON_FLOPPYS# CCN.ZIP
+del CCN_*.*
+unzip CCN
+
+
+rem TODO : boot menu here 
+
+loadlin BZIMAGE initrd=CRUSOE.GZ root=/dev/ram0 ro ramdisk_size=4096 init=/sbin/linuxrc
