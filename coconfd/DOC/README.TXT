@@ -32,6 +32,11 @@ It has no source code, but used on almost DOS-bootable floppy. Also read TURBODA
 http://www.info-zip.org/
 See LICENSE
 
+-_CHOICE.EXE
+ftp://ftp.u-aizu.ac.jp/pub/os/freedos/files/dos/choice/
+GPLv2
+
 - OTHER SCRIPTS
 GPLv2
 See COPYING.TXT
+

@@ -1,0 +1,17 @@
+================================================================
+Thank you for using opencocon, this is live FLOPPY edition.
+It is very experimental edition, then you may use your own risk.
+================================================================
+For disk-space saving, This image not contains source code of each components.
+If you want source code and patches, please access to https://github.com/dejiko/ and get buildtree.
+Some License information document is located in /usr/share/cocon of your opencocon image after boot.
+http://opencocon.org/ for more information.
+
+[ Boot Menu ]
+  Normal Boot -- 1
+  (Force Framebuffer)
+  1024x768-24bit -- 2 , 1024x768-16bit -- 3 , 800x600-24bit -- 4
+  800x600-16bit  -- 5 , 640x480-16bit  -- 6 , 640x480-8bit  -- 7
+  Debug Shell -- X
+
+Please input nunber or wait 10sec to normal boot.

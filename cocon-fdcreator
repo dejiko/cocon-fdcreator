@@ -99,6 +99,13 @@ then
   while [ $cur -lt $FLOPPYS ];
   do
     COCON_BAT_FILL="$COCON_BAT_FILL CCN-0$cur"
+
+    # if not last image, add +
+    if [ $cur -lt ` expr $FLOPPYS - 1 ` ];
+    then
+      COCON_BAT_FILL="$COCON_BAT_FILL + "
+    fi
+
     cur=` expr $cur + 1 `
   done
 
@@ -146,7 +153,7 @@ then
     mformat -C -f 1440 -v COCON-$cur -i $CUR_IMAGENAME ::
 
     # and copy devided file
-    mcopy -i $CUR_IMAGENAME $WORKDIR/CCN-0$cur ::/
+    mcopy -i $CUR_IMAGENAME $WORKDIR/CCN-0` expr $cur - 1 ` ::/
 
     # on last image, touch and copy end.txt
     if [ $cur -eq ` expr $FLOPPYS - 1` ];
